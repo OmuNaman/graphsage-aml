@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Graph Structure Beats Tabular Boosting for Money-Laundering Detection</title>
+  <meta name="description" content="An inductive GraphSAGE study on SAML-D: graph learning more than doubles money-laundering detection quality over XGBoost, for under $1 of compute." />
+  <meta property="og:title" content="Graph Structure Beats Tabular Boosting for Money-Laundering Detection" />
+  <meta property="og:description" content="An inductive GraphSAGE study on SAML-D. PR-AUC 0.74 vs 0.29, ~6x precision at recall>=0.70, under $1 on a single L4 GPU." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    h1, h2, h3, .serif { font-family: 'Newsreader', Georgia, serif; }
+    .wrap { max-width: 56rem; }
+    .wrap-wide { max-width: 68rem; }
+    pre { white-space: pre-wrap; word-break: break-word; }
+    html { scroll-behavior: smooth; }
+    .nav-link { transition: color .15s; }
+    .nav-link:hover { color: #0f172a; }
+    section { scroll-margin-top: 4.5rem; }
+  </style>
+</head>
+<body class="bg-white text-slate-800">
+
+  <!-- NAV -->
+  <nav class="sticky top-0 z-30 bg-white/85 backdrop-blur border-b border-slate-200">
+    <div class="mx-auto wrap-wide px-6 h-14 flex items-center justify-between">
+      <span class="font-semibold text-slate-900 text-sm">GraphSAGE&nbsp;·&nbsp;AML</span>
+      <div class="hidden md:flex gap-6 text-sm text-slate-500">
+        <a href="#nutshell" class="nav-link">Summary</a>
+        <a href="#why" class="nav-link">Why graphs</a>
+        <a href="#approach" class="nav-link">Approach</a>
+        <a href="#results" class="nav-link">Results</a>
+        <a href="#takeaways" class="nav-link">Takeaways</a>
+        <a href="#bibtex" class="nav-link">BibTeX</a>
+      </div>
+      <a href="https://github.com/OmuNaman/graphsage-aml" class="text-sm font-medium text-slate-700 hover:text-slate-900">Code ↗</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="px-6 pt-16 pb-10 text-center">
+    <div class="mx-auto wrap">
+      <p class="text-slate-500 font-medium tracking-wide uppercase text-xs mb-4">Anti-Money-Laundering · Graph Neural Networks</p>
+      <h1 class="text-3xl md:text-5xl font-semibold leading-tight text-slate-900">Graph Structure Beats Tabular Boosting for Money-Laundering Detection</h1>
+      <p class="mt-4 text-lg md:text-xl text-slate-600 serif">An inductive GraphSAGE study on SAML-D</p>
+
+      <p class="mt-6 text-[1.05rem] text-slate-700">
+        <span class="whitespace-nowrap">Prit Kudale<sup>1</sup>,</span>
+        <span class="whitespace-nowrap">Naman Dwivedi<sup>2</sup>,</span>
+        <span class="whitespace-nowrap">Raj Dandekar<sup>2</sup>,</span>
+        <span class="whitespace-nowrap">Rajat Dandekar<sup>2</sup>,</span>
+        <span class="whitespace-nowrap">Sreedath Panat<sup>2</sup></span>
+      </p>
+      <p class="mt-1 text-sm text-slate-500">
+        <sup>1</sup><a href="mailto:prit.kudale@gmail.com" class="hover:text-slate-900 underline decoration-slate-300">prit.kudale@gmail.com</a>
+        &nbsp;·&nbsp; <sup>2</sup>Vizuara AI Labs, hello@vizuara.com
+      </p>
+
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <a href="static/paper.pdf" class="px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 transition flex items-center gap-2">📄 Paper (PDF)</a>
+        <a href="https://github.com/OmuNaman/graphsage-aml" class="px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 transition flex items-center gap-2">💻 Code</a>
+        <a href="#bibtex" class="px-5 py-2.5 rounded-full border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-100 transition flex items-center gap-2">📑 BibTeX</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HEADLINE STATS -->
+  <section class="px-6 pb-4">
+    <div class="mx-auto wrap grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="rounded-xl border border-slate-200 bg-slate-50 p-5 text-center">
+        <div class="text-3xl font-semibold text-slate-900 serif">0.74 vs 0.29</div>
+        <div class="mt-1 text-sm text-slate-600">Test PR-AUC: GraphSAGE vs XGBoost <span class="text-slate-400">(p &lt; 0.001)</span></div>
+      </div>
+      <div class="rounded-xl border border-slate-200 bg-slate-50 p-5 text-center">
+        <div class="text-3xl font-semibold text-slate-900 serif">~6×</div>
+        <div class="mt-1 text-sm text-slate-600">Precision at recall ≥ 0.70 vs the tabular baseline</div>
+      </div>
+      <div class="rounded-xl border border-slate-200 bg-slate-50 p-5 text-center">
+        <div class="text-3xl font-semibold text-slate-900 serif">&lt; $1</div>
+        <div class="mt-1 text-sm text-slate-600">Total compute — a single L4 GPU, 15 runs</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TL;DR / IN A NUTSHELL -->
+  <section id="nutshell" class="px-6 py-10">
+    <div class="mx-auto wrap">
+      <div class="rounded-2xl bg-slate-50 border border-slate-200 p-6 md:p-8">
+        <h2 class="text-xl font-semibold text-slate-900 mb-3">In a nutshell</h2>
+        <p class="text-slate-700 leading-relaxed">
+          Most fraud-monitoring systems score each transaction <em>on its own</em>. But laundering is a
+          <strong>relational, multi-hop</strong> phenomenon — money is moved, split, and merged across many
+          accounts. We instead treat the entire payment network as a <strong>graph</strong> and let an
+          <strong>inductive GraphSAGE</strong> model read the connections between accounts. On SAML-D
+          (9.5&nbsp;million transactions, only 0.1% laundering), this relational view <strong>more than doubles
+          detection quality</strong> (PR-AUC 0.74 vs 0.29) and flags <strong>~6× more true laundering at the
+          same alert budget</strong> than a strong gradient-boosted-tree baseline. A second finding: the
+          fashionable <strong>focal loss makes no real difference</strong> here — the structure is the win, not
+          the loss function. And the whole study ran for <strong>under a dollar</strong> on one L4 GPU.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEASER FIGURE -->
+  <section class="px-6 pb-6">
+    <div class="mx-auto wrap">
+      <figure class="text-center">
+        <img src="static/figures/fig_overview_pb.png" alt="End-to-end pipeline" class="mx-auto rounded-xl shadow-sm border border-slate-200 bg-white" />
+        <figcaption class="mt-3 text-sm text-slate-500">
+          End-to-end pipeline: SAML-D transactions → directed account graph → inductive GraphSAGE encoder →
+          edge-MLP → P(is_laundering), with majority undersampling and a recall-first operating point.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ABSTRACT -->
+  <section class="px-6 py-10 bg-slate-50 border-y border-slate-200">
+    <div class="mx-auto wrap">
+      <h2 class="text-2xl font-semibold text-slate-900 mb-4 text-center">Abstract</h2>
+      <p class="text-slate-700 leading-relaxed text-justify">
+        Money laundering is a relational, multi-hop phenomenon, yet most transaction-monitoring systems score
+        transactions independently. We model SAML-D (9.5M transactions, 0.104% laundering) as a directed graph
+        in which nodes are accounts and edges are transactions, undersample the majority class to a
+        247,247-edge subset (3.99% positive), and train an inductive GraphSAGE-mean encoder with learned
+        categorical embeddings and an edge-MLP head, evaluated on a stratified <strong>disjoint-node</strong>
+        split where test accounts are unseen during training. We benchmark against XGBoost on identical
+        features, take recall (≥ 0.70) as the primary, regulator-relevant metric, and compare focal loss
+        against weighted cross-entropy. GraphSAGE decisively outperforms XGBoost: test PR-AUC
+        0.741 ± 0.013 versus 0.288 ± 0.006 and roughly 6× higher precision (0.564 vs 0.089) at recall ≥ 0.70
+        (Welch t-test p &lt; 0.001, three seeds). Focal loss, however, is statistically on par with weighted
+        cross-entropy (PR-AUC 0.736 vs 0.741, p = 0.63). Relational structure, not the loss function, is the
+        decisive lever — and the whole study runs in under one dollar on a single L4 GPU.
+      </p>
+    </div>
+  </section>
+
+  <!-- WHY GRAPHS -->
+  <section id="why" class="px-6 py-12">
+    <div class="mx-auto wrap">
+      <h2 class="text-2xl font-semibold text-slate-900 mb-2">Why graphs, and not just a better classifier?</h2>
+      <p class="text-slate-700 leading-relaxed mb-6">
+        Launderers rarely move money in a single suspicious-looking transaction. They use <strong>typologies</strong>
+        — recognizable shapes in the transaction network: <strong>fan-out</strong> (one account spraying to
+        many), <strong>fan-in</strong> (many funneling into one), <strong>layering cycles</strong>, and
+        <strong>scatter-gather</strong> chains. These are <em>multi-hop structural patterns</em>. A model that
+        looks at each transaction in isolation — no matter how good its features — is structurally blind to
+        them. A graph model that aggregates information from an account's neighborhood can see the shape.
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <figure class="text-center">
+          <img src="static/figures/fig_typologies_pb.png" alt="Laundering typologies as graph motifs" class="mx-auto rounded-xl shadow-sm border border-slate-200 bg-white" />
+          <figcaption class="mt-2 text-sm text-slate-500">Laundering typologies as graph motifs (fan-out, fan-in, layering cycle, scatter-gather) — multi-hop structure invisible to per-transaction models.</figcaption>
+        </figure>
+        <figure class="text-center">
+          <img src="static/figures/fig1_saml_subgraph.png" alt="Real SAML-D subgraph" class="mx-auto rounded-xl shadow-sm border border-slate-200 bg-white" />
+          <figcaption class="mt-2 text-sm text-slate-500">A real SAML-D subgraph (70 accounts, 114 transactions, 82 laundering): laundering concentrates in fan-in/out hubs and repeated-transfer motifs.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- APPROACH -->
+  <section id="approach" class="px-6 py-12 bg-slate-50 border-y border-slate-200">
+    <div class="mx-auto wrap">
+      <h2 class="text-2xl font-semibold text-slate-900 mb-2">Our approach</h2>
+      <p class="text-slate-700 leading-relaxed mb-5">
+        We turn the raw transaction log into a <strong>directed graph</strong>: every account is a node, every
+        transaction is an edge, and the task is to classify each edge as laundering or not. An
+        <strong>inductive GraphSAGE-mean encoder</strong> learns a representation of each account by repeatedly
+        averaging information from its neighbors; because it learns an <em>aggregation function</em> rather than
+        a fixed per-account vector, it generalizes to <strong>accounts it has never seen</strong> — exactly the
+        situation a real bank faces as new customers arrive. An <strong>edge-MLP head</strong> then takes the
+        sender and receiver embeddings, concatenates them with learned embeddings of the categorical fields
+        (currencies, bank locations, payment type) and the numeric/temporal features, and predicts
+        <em>P(is_laundering)</em>.
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="rounded-lg bg-white border border-slate-200 p-4">
+          <div class="text-sm font-semibold text-slate-900 mb-1">Extreme imbalance</div>
+          <p class="text-sm text-slate-600">Only 0.1% of transactions launder. We undersample the majority class to a 247k-edge subset (~4% positive) and compare <strong>weighted cross-entropy vs focal loss</strong>.</p>
+        </div>
+        <div class="rounded-lg bg-white border border-slate-200 p-4">
+          <div class="text-sm font-semibold text-slate-900 mb-1">Recall-first</div>
+          <p class="text-sm text-slate-600">A missed launderer is the costly error, so we tune the decision threshold post-hoc to hold <strong>recall ≥ 0.70</strong> and report precision there.</p>
+        </div>
+        <div class="rounded-lg bg-white border border-slate-200 p-4">
+          <div class="text-sm font-semibold text-slate-900 mb-1">Honest evaluation</div>
+          <p class="text-sm text-slate-600">A <strong>disjoint-node</strong> split: train and test accounts never overlap, so the test truly measures inductive generalization, not memorization.</p>
+        </div>
+      </div>
+      <figure class="text-center">
+        <img src="static/figures/fig_architecture_pb.png" alt="GraphSAGE + edge-MLP architecture" class="mx-auto rounded-xl shadow-sm border border-slate-200 bg-white" />
+        <figcaption class="mt-2 text-sm text-slate-500">GraphSAGE mean-aggregator encoder + edge-MLP head over concatenated sender/receiver embeddings and learned categorical features. We benchmark against XGBoost on identical per-edge features.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" class="px-6 py-12">
+    <div class="mx-auto wrap">
+      <h2 class="text-2xl font-semibold text-slate-900 mb-5">Results</h2>
+
+      <div class="overflow-x-auto mb-3">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-b-2 border-slate-300 text-left">
+              <th class="py-2 pr-4">Model</th>
+              <th class="py-2 pr-4">PR-AUC</th>
+              <th class="py-2 pr-4">ROC-AUC</th>
+              <th class="py-2 pr-4">Precision @ recall≥0.70</th>
+              <th class="py-2 pr-4">F1</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-slate-200">
+              <td class="py-2 pr-4">XGBoost (tabular)</td>
+              <td class="py-2 pr-4">0.288</td><td class="py-2 pr-4">0.791</td><td class="py-2 pr-4">0.089</td><td class="py-2 pr-4">0.159</td>
+            </tr>
+            <tr class="border-b border-slate-200 bg-slate-100">
+              <td class="py-2 pr-4 font-semibold">GraphSAGE + weighted BCE</td>
+              <td class="py-2 pr-4 font-semibold">0.741</td><td class="py-2 pr-4 font-semibold">0.934</td><td class="py-2 pr-4">0.564</td><td class="py-2 pr-4">0.627</td>
+            </tr>
+            <tr class="border-b border-slate-200 bg-slate-100">
+              <td class="py-2 pr-4 font-semibold">GraphSAGE + Focal (α=0.5, γ=2)</td>
+              <td class="py-2 pr-4">0.736</td><td class="py-2 pr-4">0.925</td><td class="py-2 pr-4 font-semibold">0.578</td><td class="py-2 pr-4 font-semibold">0.635</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-slate-500 mb-8">Disjoint-node test set, mean over seeds. GraphSAGE vs XGBoost PR-AUC: <strong>p &lt; 0.001</strong>. Focal vs weighted BCE: not significant (<strong>p = 0.63</strong>).</p>
+
+      <!-- interpretation -->
+      <div class="space-y-3 text-slate-700 leading-relaxed mb-8">
+        <p><strong>Graph structure is the decisive lever.</strong> GraphSAGE roughly doubles PR-AUC over XGBoost and, at the regulator-relevant operating point of recall ≥ 0.70, delivers about <strong>6× the precision</strong> (0.56 vs 0.089) — meaning far fewer false alarms for the same coverage of real laundering. The gap is large and statistically significant across three seeds (Welch t-test, p &lt; 0.001).</p>
+        <p><strong>Focal loss does not help here.</strong> Despite its popularity for imbalance, focal loss is statistically indistinguishable from weighted cross-entropy on this task (PR-AUC 0.736 vs 0.741, p = 0.63). Once the data is modeled as a graph, the loss function is a second-order detail.</p>
+        <p><strong>Depth matters because motifs are multi-hop.</strong> A 3-layer encoder was best in the architecture search — consistent with laundering patterns that span several hops of the transaction network.</p>
+      </div>
+
+      <!-- result figures grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <figure class="text-center">
+          <img src="static/figures/fig3_main_results.png" alt="Main results" class="mx-auto rounded-xl shadow-sm border border-slate-200 bg-white" />
+          <figcaption class="mt-2 text-sm text-slate-500">PR-AUC and precision at recall ≥ 0.70 across models.</figcaption>
+        </figure>
+        <figure class="text-center">
+          <img src="static/figures/fig4_pr_curves.png" alt="Precision-recall curves" class="mx-auto rounded-xl shadow-sm border border-slate-200 bg-white" />
+          <figcaption class="mt-2 text-sm text-slate-500">Precision–recall curves; GraphSAGE dominates across the curve.</figcaption>
+        </figure>
+        <figure class="text-center">
+          <img src="static/figures/fig5_arch_search.png" alt="Architecture search" class="mx-auto rounded-xl shadow-sm border border-slate-200 bg-white" />
+          <figcaption class="mt-2 text-sm text-slate-500">Architecture search — the 3-layer encoder is best.</figcaption>
+        </figure>
+        <figure class="text-center">
+          <img src="static/figures/fig6_focal_vs_bce.png" alt="Focal vs BCE" class="mx-auto rounded-xl shadow-sm border border-slate-200 bg-white" />
+          <figcaption class="mt-2 text-sm text-slate-500">Focal loss ≈ weighted BCE (within seed noise).</figcaption>
+        </figure>
+      </div>
+      <figure class="text-center mt-6">
+        <img src="static/figures/fig7_threshold.png" alt="Threshold operating point" class="mx-auto rounded-xl shadow-sm border border-slate-200 bg-white max-w-xl" />
+        <figcaption class="mt-2 text-sm text-slate-500">Precision, recall, and F1 vs decision threshold; the recall ≥ 0.70 operating point is marked.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- TAKEAWAYS -->
+  <section id="takeaways" class="px-6 py-12 bg-slate-900 text-slate-100">
+    <div class="mx-auto wrap">
+      <h2 class="text-2xl font-semibold text-white mb-6">Key takeaways</h2>
+      <ul class="space-y-4">
+        <li class="flex gap-3"><span class="text-slate-400 font-bold">01</span><p>Modeling transactions as a <strong>graph</strong> and using an inductive GNN <strong>more than doubles</strong> money-laundering detection quality (PR-AUC 0.74 vs 0.29) over a strong XGBoost baseline on identical features.</p></li>
+        <li class="flex gap-3"><span class="text-slate-400 font-bold">02</span><p>At a fixed, regulator-relevant <strong>recall ≥ 0.70</strong>, GraphSAGE yields <strong>~6× the precision</strong> — dramatically fewer false alerts for the same laundering coverage.</p></li>
+        <li class="flex gap-3"><span class="text-slate-400 font-bold">03</span><p><strong>Focal loss is not the lever.</strong> It is statistically on par with weighted cross-entropy (p = 0.63); the relational structure is what wins.</p></li>
+        <li class="flex gap-3"><span class="text-slate-400 font-bold">04</span><p>A <strong>credible, reproducible</strong> AML-GNN benchmark — multi-seed, disjoint-node, significance-tested — fits in <strong>under $1</strong> on a single L4 GPU (15 runs, logged to an append-only ledger).</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- LIMITATIONS -->
+  <section class="px-6 py-12">
+    <div class="mx-auto wrap">
+      <h2 class="text-2xl font-semibold text-slate-900 mb-3">Limitations &amp; future work</h2>
+      <p class="text-slate-700 leading-relaxed">
+        This study uses a single <strong>synthetic</strong> dataset (SAML-D), whose explicitly-generated
+        typologies may favor structural models more than messy real data would; it evaluates one GNN family
+        (GraphSAGE-mean, with GAT excluded after prior negative results) on a 2.5% undersampled subgraph rather
+        than the full graph, and does not model transaction <strong>time</strong> dynamically. Natural next
+        steps: validation on real or other benchmarks (AMLworld, Elliptic), dynamic/temporal GNNs, richer
+        aggregators (e.g. PNA), and full-graph mini-batch training. We report point estimates over three seeds
+        with significance tests, not exhaustive confidence intervals.
+      </p>
+    </div>
+  </section>
+
+  <!-- BIBTEX -->
+  <section id="bibtex" class="px-6 py-12 bg-slate-50 border-y border-slate-200">
+    <div class="mx-auto wrap">
+      <h2 class="text-2xl font-semibold text-slate-900 mb-4">BibTeX</h2>
+      <pre class="bg-slate-900 text-slate-100 rounded-xl p-5 text-xs leading-relaxed overflow-x-auto">@misc{kudale2026graphsageaml,
+  title  = {Graph Structure Beats Tabular Boosting for Money-Laundering Detection:
+            An Inductive GraphSAGE Study on SAML-D},
+  author = {Kudale, Prit and Dwivedi, Naman and Dandekar, Raj and
+            Dandekar, Rajat and Panat, Sreedath},
+  year   = {2026},
+  note   = {Vizuara AI Labs}
+}</pre>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="px-6 py-12 text-center text-sm text-slate-400">
+    <div class="mx-auto wrap space-y-2">
+      <p>Vizuara AI Labs · 2026 · <a href="https://github.com/OmuNaman/graphsage-aml" class="text-slate-600 hover:text-slate-900">github.com/OmuNaman/graphsage-aml</a></p>
+      <p>All results are real, computed on a single Modal L4 GPU (under&nbsp;$1) and logged to an append-only ledger.</p>
+      <p class="text-slate-400">Page design adapted from the
+        <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" class="underline decoration-slate-300 hover:text-slate-700">Academic Project Page Template</a>
+        (Nerfies), used under CC BY-SA 4.0.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

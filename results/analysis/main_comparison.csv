@@ -1,4 +1,0 @@
-model,pr_auc_mean,pr_auc_std,roc_auc_mean,prec70_mean,prec70_std,recall_mean,f1_70_mean
-XGBoost,0.2881,0.0058,0.7906,0.0893,0.0113,0.7417,0.1592
-GraphSAGE+wBCE,0.7412,0.0133,0.934,0.5641,0.0688,0.7101,0.6271
-GraphSAGE+Focal,0.7364,0.0084,0.9249,0.5779,0.0677,0.7077,0.6348
